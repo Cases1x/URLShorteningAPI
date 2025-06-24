@@ -18,7 +18,13 @@ class ShortenURLController extends Controller
 
         if($validated) return $validated;
 
-        $shortCode = Str::random(6);
+
+        do {
+            $shortCode = Str::random(6);
+        } while (ShortenURL::where('shortCode', $shortCode)->exists());
+
+
+        // $shortCode = Str::random(6); // Have to make sure that this does not create a duplicate
 
         $url = ShortenURL::create([
             'url' => $request->url,
@@ -90,5 +96,24 @@ class ShortenURLController extends Controller
             'status' => 'success',
             'message' => "shorten url $shortCode deleted successfully"
         ], 200);
+    }
+
+
+    public function getStatistics($shortCode)
+    {
+        $url = ShortenURL::where('shortCode', $shortCode)->first();        
+
+        if(!$url)
+        {
+            return response()->json([
+                'status' => 'error',
+                'message' => "Shorten URL: $shortCode does not exists."
+            ], 404);
+        }
+
+        return response()->json([
+            $url
+        ]);
+
     }
 }
